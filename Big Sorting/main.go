@@ -1,12 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"os"
-	"strconv"
-	"strings"
 )
 
 /*
@@ -45,6 +40,22 @@ import (
 //		return unsorted
 //	}
 
+func verify(a string, b string) bool {
+	if len(a) > len(b) {
+		return false
+	} else if len(a) < len(b) {
+		return true
+	}
+	for i := range a {
+		if a[i] > b[i] {
+			return false
+		} else if a[i] < b[i] {
+			return true
+		}
+	}
+	return true
+}
+
 func bigSorting(items []string) []string {
 	if len(items) < 2 {
 		return items
@@ -55,74 +66,38 @@ func bigSorting(items []string) []string {
 }
 
 func merge(a []string, b []string) []string {
-	var final []string
-	i := 0
-	j := 0
+	final := make([]string, len(a)+len(b))
+	i, j, k := 0, 0, 0
 	for i < len(a) && j < len(b) {
-		if a[i] < b[j] {
-			final = append(final, a[i])
+		if verify(a[i], b[j]) {
+			final[k] = a[i]
 			i++
 		} else {
-			final = append(final, b[j])
+			final[k] = b[j]
 			j++
 		}
+		k++
 	}
 	for ; i < len(a); i++ {
-		final = append(final, a[i])
+		final[k] = a[i]
+		k++
 	}
 	for ; j < len(b); j++ {
-		final = append(final, b[j])
+		final[k] = b[j]
+		k++
 	}
-	return final
+	return final[:k]
 }
 
 func main() {
-	reader := bufio.NewReaderSize(os.Stdin, 16*1024*1024)
 
-	stdout, err := os.Create(os.Getenv("OUTPUT_PATH"))
-	checkError(err)
-
-	defer stdout.Close()
-
-	writer := bufio.NewWriterSize(stdout, 16*1024*1024)
-
-	nTemp, err := strconv.ParseInt(strings.TrimSpace(readLine(reader)), 10, 64)
-	checkError(err)
-	n := int32(nTemp)
-
-	var unsorted []string
-
-	for i := 0; i < int(n); i++ {
-		unsortedItem := readLine(reader)
-		unsorted = append(unsorted, unsortedItem)
-	}
-
-	result := bigSorting(unsorted)
+	result := bigSorting([]string{"31415926535897932384626433832795", "1", "3", "10", "3", "5"})
 
 	for i, resultItem := range result {
-		fmt.Fprintf(writer, "%s", resultItem)
+		fmt.Printf("%s", resultItem)
 
 		if i != len(result)-1 {
-			fmt.Fprintf(writer, "\n")
+			fmt.Printf("\n")
 		}
-	}
-
-	fmt.Fprintf(writer, "\n")
-
-	writer.Flush()
-}
-
-func readLine(reader *bufio.Reader) string {
-	str, _, err := reader.ReadLine()
-	if err == io.EOF {
-		return ""
-	}
-
-	return strings.TrimRight(string(str), "\r\n")
-}
-
-func checkError(err error) {
-	if err != nil {
-		panic(err)
 	}
 }
